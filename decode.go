@@ -29,7 +29,7 @@ func Decode(dst any, r *http.Request) error {
 		field := typ.Field(i)
 
 		val, err := readValue(r, field.Tag)
-		if errors.Is(err, ErrTagNotFound) {
+		if errors.Is(err, errTagNotFound) {
 			continue
 		}
 		if err := set(obj, i, field, val); err != nil {
@@ -45,8 +45,10 @@ func readValue(r *http.Request, tag reflect.StructTag) (string, error) {
 			return fn(r, v), nil
 		}
 	}
-	return "", ErrTagNotFound
+	return "", errTagNotFound
 }
+
+var errTagNotFound = errors.New("tag not found")
 
 // valueReaders map how field tags are read from a given request
 var valueReaders = map[string]valueReader{
@@ -62,8 +64,6 @@ var valueReaders = map[string]valueReader{
 }
 
 type valueReader func(*http.Request, string) string
-
-var ErrTagNotFound = errors.New("tag not found")
 
 func set(obj reflect.Value, i int, field reflect.StructField, val string) error {
 	if val == "" {
