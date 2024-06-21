@@ -11,7 +11,6 @@ package xr
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -19,30 +18,6 @@ import (
 	"reflect"
 	"strconv"
 )
-
-// Pick using [PickerDefault]
-func Pick(dst any, r *http.Request) error {
-	return PickerDefault.Pick(dst, r)
-}
-
-// Register using [PickerDefault]
-func Register(contentType string, fn func(io.Reader) Decoder) {
-	PickerDefault.Register(contentType, fn)
-}
-
-func init() {
-	p := NewPicker()
-	p.Register("application/json",
-		func(r io.Reader) Decoder {
-			return json.NewDecoder(r)
-		},
-	)
-	PickerDefault = p
-}
-
-// PickerDefault has a predefined content-type decoder for
-// application/json.
-var PickerDefault *Picker
 
 // NewPicker returns a picker with no content-type decoders.
 func NewPicker() *Picker {
@@ -55,6 +30,7 @@ type Picker struct {
 	registry map[string]func(io.Reader) Decoder
 }
 
+// Register body decoder based on content-type string.
 func (p *Picker) Register(contentType string, fn func(io.Reader) Decoder) {
 	p.registry[contentType] = fn
 }
