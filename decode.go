@@ -32,26 +32,25 @@ func Decode(dst any, r *http.Request) error {
 			break
 		}
 		field := typ.Field(i)
-		kind := field.Type.Kind()
 
 		if tag := field.Tag.Get("path"); tag != "" {
 			val := r.PathValue(tag)
-			err = set(obj, i, kind, field.Name, val)
+			err = set(obj, i, field, val)
 		}
 
 		if tag := field.Tag.Get("query"); tag != "" {
 			val := query.Get(tag)
-			err = set(obj, i, kind, field.Name, val)
+			err = set(obj, i, field, val)
 		}
 		if tag := field.Tag.Get("header"); tag != "" {
 			val := r.Header.Get(tag)
-			err = set(obj, i, kind, field.Name, val)
+			err = set(obj, i, field, val)
 		}
 	}
 	return err
 }
 
-func set(obj reflect.Value, i int, kind reflect.Kind, fieldName, val string) error {
+func set(obj reflect.Value, i int, field reflect.StructField, val string) error {
 	if val == "" {
 		return nil
 	}
@@ -61,9 +60,9 @@ func set(obj reflect.Value, i int, kind reflect.Kind, fieldName, val string) err
 	privateField := isPrivateField(elm.Type(), i)
 	var setName string
 	if privateField {
-		setName = "Set" + capitalizeFirstLetter(fieldName)
+		setName = "Set" + capitalizeFirstLetter(field.Name)
 	} else {
-		setName = "Set" + fieldName
+		setName = "Set" + field.Name
 	}
 
 	if fn := obj.MethodByName(setName); fn.IsValid() {
@@ -73,10 +72,12 @@ func set(obj reflect.Value, i int, kind reflect.Kind, fieldName, val string) err
 
 	if privateField {
 		msg := fmt.Sprintf(
-			"private field %s, missing %s", fieldName, setName,
+			"private field %s, missing %s", field.Name, setName,
 		)
 		panic(msg)
 	}
+
+	kind := field.Type.Kind()
 
 	switch kind {
 	case reflect.Int:
