@@ -91,7 +91,11 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 	}
 
 	if fn := obj.MethodByName(setName); fn.IsValid() {
-		_ = fn.Call([]reflect.Value{reflect.ValueOf(val)})
+		result := fn.Call([]reflect.Value{reflect.ValueOf(val)})
+		i := len(result)
+		if i > 0 && !result[i-1].IsNil() {
+			return result[i-1].Interface().(error)
+		}
 		return nil
 	}
 
