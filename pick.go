@@ -104,9 +104,9 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 
 	elm := obj.Elem()
 	// private fields cannot be set using reflect
-	privateField := isPrivateField(elm.Type(), i)
+	isPrivateField := field.PkgPath != ""
 	var setName string
-	if privateField {
+	if isPrivateField {
 		setName = "Set" + capitalizeFirstLetter(field.Name)
 	} else {
 		setName = "Set" + field.Name
@@ -121,7 +121,7 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 		return nil
 	}
 
-	if privateField {
+	if isPrivateField {
 		msg := fmt.Sprintf(
 			"private field %s, missing %s", field.Name, setName,
 		)
@@ -129,7 +129,6 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 	}
 
 	kind := field.Type.Kind()
-
 	switch kind {
 	case reflect.Int:
 		value, err := strconv.Atoi(val)
@@ -153,11 +152,6 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 		return fmt.Errorf("Unsupported VType %v", kind)
 	}
 	return nil
-}
-
-func isPrivateField(t reflect.Type, i int) bool {
-	field := t.Field(i)
-	return field.PkgPath != ""
 }
 
 func capitalizeFirstLetter(s string) string {
