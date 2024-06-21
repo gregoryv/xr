@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func ExampleDecode_xml() {
+func ExamplePick_xml() {
 	// register decoders for content-type headers if needed
 	// application/json is registered out of the box
 	Register(
@@ -20,7 +20,7 @@ func ExampleDecode_xml() {
 	)
 	h := func(w http.ResponseWriter, r *http.Request) {
 		var x PersonCreate
-		_ = Decode(&x, r)
+		_ = Pick(&x, r)
 		fmt.Println("id:", x.Id)
 		fmt.Println("name:", x.Name)
 		fmt.Println("group:", x.Group)

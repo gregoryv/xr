@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-func ExampleDecode() {
+func ExamplePick_default() {
 	// handler on server side
 	h := func(w http.ResponseWriter, r *http.Request) {
 		var x PersonCreate
-		err := Decode(&x, r)
+		err := Pick(&x, r)
 		fmt.Println("id:", x.Id)
 		fmt.Println("name:", x.Name)
 		fmt.Println("group:", x.Group)

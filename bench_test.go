@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func BenchmarkDecode(b *testing.B) {
+func BenchmarkPick(b *testing.B) {
 	// incoming request
 	var buf bytes.Buffer
 	buf.WriteString(`{"Name":"John Doe"}`)
@@ -17,6 +17,6 @@ func BenchmarkDecode(b *testing.B) {
 
 	var x PersonCreate
 	for i := 0; i < b.N; i++ {
-		_ = Decode(&x, r)
+		_ = Pick(&x, r)
 	}
 }
