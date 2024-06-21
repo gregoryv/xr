@@ -105,15 +105,16 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 	elm := obj.Elem()
 	// private fields cannot be set using reflect
 	isPrivateField := field.PkgPath != ""
-	var setName string
+	var setMethod string
 	if isPrivateField {
-		setName = "Set" + capitalizeFirstLetter(field.Name)
+		setMethod = "Set" + capitalizeFirstLetter(field.Name)
 	} else {
-		setName = "Set" + field.Name
+		setMethod = "Set" + field.Name
 	}
 
-	if fn := obj.MethodByName(setName); fn.IsValid() {
+	if fn := obj.MethodByName(setMethod); fn.IsValid() {
 		result := fn.Call([]reflect.Value{reflect.ValueOf(val)})
+		// return error from setMethod, if any
 		i := len(result)
 		if i > 0 && !result[i-1].IsNil() {
 			return result[i-1].Interface().(error)
@@ -123,7 +124,7 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 
 	if isPrivateField {
 		msg := fmt.Sprintf(
-			"private field %s, missing %s", field.Name, setName,
+			"private field %s, missing %s", field.Name, setMethod,
 		)
 		panic(msg)
 	}
