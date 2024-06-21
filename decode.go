@@ -145,13 +145,21 @@ func capitalizeFirstLetter(s string) string {
 }
 
 func newDecoder(v string, r io.Reader) Decoder {
-	switch v {
-	case "application/json":
-		return json.NewDecoder(r)
-
-	default:
-		return noop
+	if d, found := bodyDecoders[v]; found {
+		return d(r)
 	}
+	return noop
+}
+
+func Register(contentType string, fn func(io.Reader) Decoder) {
+	bodyDecoders[contentType] = fn
+}
+
+// bodyDecoders map a content-type string to a decoder
+var bodyDecoders = map[string]func(io.Reader) Decoder{
+	"application/json": func(r io.Reader) Decoder {
+		return json.NewDecoder(r)
+	},
 }
 
 var noop = decoderFunc(func(_ any) error { return nil })
