@@ -1,4 +1,4 @@
-// Package httpr provides a http.Request decode func.
+// Package xr provides a http.Request decode func.
 //
 // Decode first tries to decode the body based on the request
 // content-type header. E.g. "application/json" will use json.Decoder.
@@ -7,7 +7,7 @@
 // field tag of a struct the value is read and set.  If there is a
 // method named Set{FIELD_TAG}, it is used, otherwise field is set
 // directly using reflection.
-package httpr
+package xr
 
 import (
 	"bytes"

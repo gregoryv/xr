@@ -1,3 +1,3 @@
-module github.com/gregoryv/httpr
+module github.com/gregoryv/xr
 
 go 1.22.2
