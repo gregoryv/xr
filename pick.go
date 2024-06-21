@@ -152,6 +152,13 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 		}
 		elm.Field(i).SetUint(value)
 
+	case reflect.Uint32:
+		value, err := strconv.ParseUint(val, 10, 32)
+		if err != nil {
+			return err
+		}
+		elm.Field(i).SetUint(value)
+
 	case reflect.Float32:
 		value, err := strconv.ParseFloat(val, 32)
 		if err != nil {
