@@ -145,18 +145,18 @@ func capitalizeFirstLetter(s string) string {
 }
 
 func newDecoder(v string, r io.Reader) Decoder {
-	if d, found := bodyDecoders[v]; found {
+	if d, found := registry[v]; found {
 		return d(r)
 	}
 	return noop
 }
 
 func Register(contentType string, fn func(io.Reader) Decoder) {
-	bodyDecoders[contentType] = fn
+	registry[contentType] = fn
 }
 
-// bodyDecoders map a content-type string to a decoder
-var bodyDecoders = map[string]func(io.Reader) Decoder{
+// registry maps a content-type string to a decoder
+var registry = map[string]func(io.Reader) Decoder{
 	"application/json": func(r io.Reader) Decoder {
 		return json.NewDecoder(r)
 	},
