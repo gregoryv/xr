@@ -145,6 +145,13 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 		}
 		elm.Field(i).SetFloat(value)
 
+	case reflect.Float64:
+		value, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			return err
+		}
+		elm.Field(i).SetFloat(value)
+
 	case reflect.String:
 		elm.Field(i).SetString(val)
 
