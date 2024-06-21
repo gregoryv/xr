@@ -118,14 +118,15 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 	}
 	return nil
 }
+
 func isPrivateField(t reflect.Type, i int) bool {
 	field := t.Field(i)
 	return field.PkgPath != ""
 }
+
 func capitalizeFirstLetter(s string) string {
 	b := []byte(s)
 	b[0] = bytes.ToUpper([]byte{b[0]})[0]
-
 	return string(b)
 }
 
@@ -141,12 +142,12 @@ func newDecoder(v string, r io.Reader) Decoder {
 
 var noop = DecoderFunc(func(_ any) error { return nil })
 
-type Decoder interface {
-	Decode(v any) error
-}
-
 type DecoderFunc func(v any) error
 
 func (fn DecoderFunc) Decode(v any) error {
 	return fn(v)
+}
+
+type Decoder interface {
+	Decode(v any) error
 }
