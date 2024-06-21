@@ -1,9 +1,7 @@
 package httpr
 
 import (
-	"encoding/xml"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -11,15 +9,6 @@ import (
 )
 
 func ExampleDecode() {
-	// register decoders for content-type headers if needed
-	// application/json is registered out of the box
-	Register(
-		"application/xml",
-		func(r io.Reader) Decoder {
-			return xml.NewDecoder(r)
-		},
-	)
-
 	// handler on server side
 	h := func(w http.ResponseWriter, r *http.Request) {
 		var x PersonCreate
@@ -61,7 +50,7 @@ func ExampleDecode() {
 
 type PersonCreate struct {
 	Id    string `path:"id"`
-	Name  string `json:"name"`
+	Name  string `json:"name" xml:"name"`
 	Group string `query:"group"`
 	Copy  int    `query:"copies"`
 	Flag  bool   `query:"flag"`
