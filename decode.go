@@ -154,11 +154,11 @@ func newDecoder(v string, r io.Reader) Decoder {
 	}
 }
 
-var noop = DecoderFunc(func(_ any) error { return nil })
+var noop = decoderFunc(func(_ any) error { return nil })
 
-type DecoderFunc func(v any) error
+type decoderFunc func(v any) error
 
-func (fn DecoderFunc) Decode(v any) error {
+func (fn decoderFunc) Decode(v any) error {
 	return fn(v)
 }
 
