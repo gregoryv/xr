@@ -1,4 +1,4 @@
-// Package xr provides a http.Request decode func.
+// Package xr provides means to pick values from a http.Request
 //
 // Pick first tries to decode the body based on the request
 // content-type header. E.g. "application/json" will use json.Decoder.
@@ -20,10 +20,49 @@ import (
 	"strconv"
 )
 
-// Pick the given request into any struct type.
+// Pick using [PickerDefault]
 func Pick(dst any, r *http.Request) error {
+	return PickerDefault.Pick(dst, r)
+}
+
+// Register using [PickerDefault]
+func Register(contentType string, fn func(io.Reader) Decoder) {
+	PickerDefault.Register(contentType, fn)
+}
+
+func init() {
+	p := NewPicker()
+	p.Register("application/json",
+		func(r io.Reader) Decoder {
+			return json.NewDecoder(r)
+		},
+	)
+	PickerDefault = p
+}
+
+// PickerDefault has a predefined content-type decoder for
+// application/json.
+var PickerDefault *Picker
+
+// NewPicker returns a picker with no content-type decoders.
+func NewPicker() *Picker {
+	return &Picker{
+		registry: make(map[string]func(io.Reader) Decoder),
+	}
+}
+
+type Picker struct {
+	registry map[string]func(io.Reader) Decoder
+}
+
+func (p *Picker) Register(contentType string, fn func(io.Reader) Decoder) {
+	p.registry[contentType] = fn
+}
+
+// Pick the given request into any struct type.
+func (p *Picker) Pick(dst any, r *http.Request) error {
 	// decide for input format
-	dec := newDecoder(
+	dec := p.newDecoder(
 		r.Header.Get("content-type"),
 		r.Body,
 	)
@@ -47,6 +86,13 @@ func Pick(dst any, r *http.Request) error {
 		}
 	}
 	return nil
+}
+
+func (p *Picker) newDecoder(v string, r io.Reader) Decoder {
+	if d, found := p.registry[v]; found {
+		return d(r)
+	}
+	return noop
 }
 
 func readValue(r *http.Request, tag reflect.StructTag) (string, error) {
@@ -142,24 +188,6 @@ func capitalizeFirstLetter(s string) string {
 	b := []byte(s)
 	b[0] = bytes.ToUpper([]byte{b[0]})[0]
 	return string(b)
-}
-
-func newDecoder(v string, r io.Reader) Decoder {
-	if d, found := registry[v]; found {
-		return d(r)
-	}
-	return noop
-}
-
-func Register(contentType string, fn func(io.Reader) Decoder) {
-	registry[contentType] = fn
-}
-
-// registry maps a content-type string to a decoder
-var registry = map[string]func(io.Reader) Decoder{
-	"application/json": func(r io.Reader) Decoder {
-		return json.NewDecoder(r)
-	},
 }
 
 var noop = decoderFunc(func(_ any) error { return nil })
