@@ -72,6 +72,17 @@ func TestPick_bool(t *testing.T) {
 	}
 }
 
+func TestPick_float32(t *testing.T) {
+	var x struct {
+		I float32 `header:"number"`
+	}
+	r := httptest.NewRequest("GET", "/", http.NoBody)
+	r.Header.Set("number", "not a float32")
+	if err := Pick(&x, r); err == nil {
+		t.Error("expect error")
+	}
+}
+
 func TestPick_atoi(t *testing.T) {
 	var x struct {
 		I int `header:"number"`

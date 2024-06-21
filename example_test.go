@@ -18,6 +18,7 @@ func ExamplePick_default() {
 		fmt.Println("group:", x.Group)
 		fmt.Println("copy:", x.Copy)
 		fmt.Println("flag:", x.Flag)
+		fmt.Println("pval:", x.PVal)
 		fmt.Println("token:", x.token)
 		fmt.Println("color:", x.Color)
 		fmt.Println("width:", x.Width)
@@ -27,7 +28,7 @@ func ExamplePick_default() {
 	w := httptest.NewRecorder()
 	data := `{"Name":"John Doe"}`
 	body := strings.NewReader(data)
-	r := httptest.NewRequest("POST", "/person/123?group=aliens&copies=10&flag=true", body)
+	r := httptest.NewRequest("POST", "/person/123?group=aliens&copies=10&flag=true&pval=11.79", body)
 	r.Header.Set("content-type", "application/json")
 	r.Header.Set("authorization", "Bearer ...token...")
 	r.Header.Set("color", "yellow")
@@ -42,6 +43,7 @@ func ExamplePick_default() {
 	// group: aliens
 	// copy: 10
 	// flag: true
+	// pval: 11.79
 	// token: ...token...
 	// color: yellow
 	// width: 0
@@ -49,11 +51,12 @@ func ExamplePick_default() {
 }
 
 type PersonCreate struct {
-	Id    string `path:"id"`
-	Name  string `json:"name" xml:"name"`
-	Group string `query:"group"`
-	Copy  int    `query:"copies"`
-	Flag  bool   `query:"flag"`
+	Id    string  `path:"id"`
+	Name  string  `json:"name" xml:"name"`
+	Group string  `query:"group"`
+	Copy  int     `query:"copies"`
+	Flag  bool    `query:"flag"`
+	PVal  float32 `query:"pval"`
 
 	// private field requires method SetToken
 	token string `header:"authorization"`
