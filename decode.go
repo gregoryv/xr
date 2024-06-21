@@ -3,6 +3,7 @@ package httpr
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,33 +23,47 @@ func Decode(dst any, r *http.Request) error {
 
 	obj := reflect.ValueOf(dst)
 	elm := obj.Elem()
-	query := r.URL.Query()
-
 	typ := elm.Type()
 
-	var err error
 	for i := 0; i < elm.NumField(); i++ {
-		if err != nil {
-			break
-		}
 		field := typ.Field(i)
 
-		if tag := field.Tag.Get("path"); tag != "" {
-			val := r.PathValue(tag)
-			err = set(obj, i, field, val)
+		val, err := readValue(r, field.Tag)
+		if errors.Is(err, ErrTagNotFound) {
+			continue
 		}
-
-		if tag := field.Tag.Get("query"); tag != "" {
-			val := query.Get(tag)
-			err = set(obj, i, field, val)
-		}
-		if tag := field.Tag.Get("header"); tag != "" {
-			val := r.Header.Get(tag)
-			err = set(obj, i, field, val)
+		if err := set(obj, i, field, val); err != nil {
+			return err
 		}
 	}
-	return err
+	return nil
 }
+
+func readValue(r *http.Request, tag reflect.StructTag) (string, error) {
+	for t, fn := range valueReaders {
+		if v := tag.Get(t); v != "" {
+			return fn(r, v), nil
+		}
+	}
+	return "", ErrTagNotFound
+}
+
+// valueReaders map how field tags are read from a given request
+var valueReaders = map[string]valueReader{
+	"path": func(r *http.Request, name string) string {
+		return r.PathValue(name)
+	},
+	"query": func(r *http.Request, name string) string {
+		return r.URL.Query().Get(name)
+	},
+	"header": func(r *http.Request, name string) string {
+		return r.Header.Get(name)
+	},
+}
+
+type valueReader func(*http.Request, string) string
+
+var ErrTagNotFound = errors.New("tag not found")
 
 func set(obj reflect.Value, i int, field reflect.StructField, val string) error {
 	if val == "" {

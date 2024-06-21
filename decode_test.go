@@ -7,6 +7,16 @@ import (
 	"testing"
 )
 
+func TestDecode_unknownTag(t *testing.T) {
+	var x struct {
+		Jib bool `jib:"first"`
+	}
+	r := httptest.NewRequest("GET", "/", http.NoBody)
+	if err := Decode(&x, r); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestDecode_stopOnFirstError(t *testing.T) {
 	var x struct {
 		First  bool `header:"first"`
@@ -22,6 +32,7 @@ func TestDecode_stopOnFirstError(t *testing.T) {
 		t.Error("Second was set")
 	}
 }
+
 func TestDecode_contentType(t *testing.T) {
 	data := `{broken`
 	body := strings.NewReader(data)
