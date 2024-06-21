@@ -18,7 +18,7 @@ func ExampleUnmarshal() {
 		fmt.Println("group:", x.Group)
 		fmt.Println("copy:", x.Copy)
 		fmt.Println("flag:", x.Flag)
-		fmt.Println("token:", x.Token)
+		fmt.Println("token:", x.token)
 	}
 
 	w := httptest.NewRecorder()
@@ -47,14 +47,15 @@ type PersonCreate struct {
 	Copy  int    `query:"copies"`
 	Flag  bool   `query:"flag"`
 
-	Token string `header:"authorization"`
+	token string `header:"authorization"`
 	Auth  string `header:"authorization"`
 }
 
+// SetToken trims optional prefix "Bearer " from v.
 func (p *PersonCreate) SetToken(v string) {
 	if strings.HasPrefix(v, "Bearer ") {
-		p.Token = v[7:]
+		p.token = v[7:]
 		return
 	}
-	p.Token = v
+	p.token = v
 }

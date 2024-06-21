@@ -1,6 +1,7 @@
 package httpr
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -55,12 +56,28 @@ func set(obj reflect.Value, i int, kind reflect.Kind, fieldName, val string) err
 		return nil
 	}
 
-	if fn := obj.MethodByName("Set" + fieldName); fn.IsValid() {
+	elm := obj.Elem()
+	// private fields cannot be set using reflect
+	privateField := isPrivateField(elm.Type(), i)
+	var setName string
+	if privateField {
+		setName = "Set" + capitalizeFirstLetter(fieldName)
+	} else {
+		setName = "Set" + fieldName
+	}
+
+	if fn := obj.MethodByName(setName); fn.IsValid() {
 		_ = fn.Call([]reflect.Value{reflect.ValueOf(val)})
 		return nil
 	}
 
-	elm := obj.Elem()
+	if privateField {
+		msg := fmt.Sprintf(
+			"private field %s, missing %s", fieldName, setName,
+		)
+		panic(msg)
+	}
+
 	switch kind {
 	case reflect.Int:
 		value, err := strconv.Atoi(val)
@@ -84,6 +101,16 @@ func set(obj reflect.Value, i int, kind reflect.Kind, fieldName, val string) err
 		return fmt.Errorf("Unsupported VType %v", kind)
 	}
 	return nil
+}
+func isPrivateField(t reflect.Type, i int) bool {
+	field := t.Field(i)
+	return field.PkgPath != ""
+}
+func capitalizeFirstLetter(s string) string {
+	b := []byte(s)
+	b[0] = bytes.ToUpper([]byte{b[0]})[0]
+
+	return string(b)
 }
 
 func newDecoder(v string, r io.Reader) Decoder {
