@@ -120,6 +120,22 @@ func TestPick_uint32(t *testing.T) {
 	}
 }
 
+func TestPick_uint64(t *testing.T) {
+	var x struct {
+		I uint64 `header:"number"`
+	}
+	r := httptest.NewRequest("GET", "/", http.NoBody)
+	r.Header.Set("number", "18446744073709551616")
+	if err := Pick(&x, r); err == nil {
+		t.Error("expect error")
+	}
+	// ok case
+	r.Header.Set("number", "18446744073709551615")
+	if err := Pick(&x, r); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestPick_float32(t *testing.T) {
 	var x struct {
 		I float32 `header:"number"`

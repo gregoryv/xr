@@ -131,6 +131,13 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 
 	kind := field.Type.Kind()
 	switch kind {
+	case reflect.Bool:
+		value, err := strconv.ParseBool(val)
+		if err != nil {
+			return err
+		}
+		elm.Field(i).SetBool(value)
+
 	case reflect.Int:
 		value, err := strconv.Atoi(val)
 		if err != nil {
@@ -159,6 +166,13 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 		}
 		elm.Field(i).SetUint(value)
 
+	case reflect.Uint64:
+		value, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			return err
+		}
+		elm.Field(i).SetUint(value)
+
 	case reflect.Float32:
 		value, err := strconv.ParseFloat(val, 32)
 		if err != nil {
@@ -175,13 +189,6 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 
 	case reflect.String:
 		elm.Field(i).SetString(val)
-
-	case reflect.Bool:
-		value, err := strconv.ParseBool(val)
-		if err != nil {
-			return err
-		}
-		elm.Field(i).SetBool(value)
 
 		// add more types when needed
 	default:
