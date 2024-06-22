@@ -87,6 +87,9 @@ var valueReaders = map[string]valueReader{
 	"header": func(r *http.Request, name string) string {
 		return r.Header.Get(name)
 	},
+	"form": func(r *http.Request, name string) string {
+		return r.FormValue(name)
+	},
 }
 
 type valueReader func(*http.Request, string) string

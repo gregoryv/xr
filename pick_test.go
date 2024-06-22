@@ -48,11 +48,11 @@ func TestPick_contentType(t *testing.T) {
 }
 
 func TestPick_unsupported(t *testing.T) {
-	type complex struct {
+	type thing struct {
 		Name string
 	}
 	var x struct {
-		C complex `header:"input"`
+		I thing `header:"input"`
 	}
 	r := httptest.NewRequest("GET", "/", http.NoBody)
 	r.Header.Set("input", "not an int")
