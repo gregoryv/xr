@@ -132,14 +132,21 @@ func set(obj reflect.Value, i int, val string) error {
 		obj.Elem().Field(i).SetBool(value)
 
 	case reflect.Int:
-		value, err := strconv.Atoi(val)
+		value, err := strconv.ParseInt(val, 10, 64)
 		if err != nil {
 			return err
 		}
-		obj.Elem().Field(i).SetInt(int64(value))
+		obj.Elem().Field(i).SetInt(value)
 
 	case reflect.Int8:
 		value, err := strconv.ParseInt(val, 10, 8)
+		if err != nil {
+			return err
+		}
+		obj.Elem().Field(i).SetInt(value)
+
+	case reflect.Int16:
+		value, err := strconv.ParseInt(val, 10, 16)
 		if err != nil {
 			return err
 		}

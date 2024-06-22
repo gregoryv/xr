@@ -88,12 +88,28 @@ func TestPick_int8(t *testing.T) {
 		I int8 `header:"number"`
 	}
 	r := httptest.NewRequest("GET", "/", http.NoBody)
-	r.Header.Set("number", "128")
+	r.Header.Set("number", "-129")
 	if err := Pick(&x, r); err == nil {
 		t.Error("expect error")
 	}
 	// ok case
-	r.Header.Set("number", "127")
+	r.Header.Set("number", "-128")
+	if err := Pick(&x, r); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPick_int16(t *testing.T) {
+	var x struct {
+		I int16 `header:"number"`
+	}
+	r := httptest.NewRequest("GET", "/", http.NoBody)
+	r.Header.Set("number", "-32769")
+	if err := Pick(&x, r); err == nil {
+		t.Error("expect error")
+	}
+	// ok case
+	r.Header.Set("number", "-32768")
 	if err := Pick(&x, r); err != nil {
 		t.Error(err)
 	}
