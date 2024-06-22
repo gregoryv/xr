@@ -7,6 +7,15 @@ import (
 	"testing"
 )
 
+func TestPick_nonPointer(t *testing.T) {
+	defer catchPanic(t)
+	var x struct {
+		Jib bool `query:"jib"`
+	}
+	r := httptest.NewRequest("GET", "/?jib=true", http.NoBody)
+	Pick(x, r)
+}
+
 func TestPick_unknownTag(t *testing.T) {
 	var x struct {
 		Jib bool `jib:"first"`

@@ -7,7 +7,8 @@ different parts of the request. Usually those values end up in one
 struct of sorts. That is where package xr comes in. Making the picking
 of values from URLs, headers and body easier.
 
-It uses reflection to check for field tags, such as; **path, query, header**
+It uses reflection to check for field tags, such as;
+**path, query, header, form**
 
 To support checking values in this same process the xr.Picker looks
 for matching Set**FieldName** methods on a struct which may or may not

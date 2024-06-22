@@ -37,6 +37,10 @@ func (p *Picker) Register(contentType string, fn func(io.Reader) Decoder) {
 
 // Pick the given request into any struct type.
 func (p *Picker) Pick(dst any, r *http.Request) error {
+	if t := reflect.TypeOf(dst); t.Kind() != reflect.Ptr {
+		panic("Pick(dst, r): dst must be a pointer")
+	}
+
 	// decide for input format
 	ct := r.Header.Get("content-type")
 	dec := p.newDecoder(ct, r.Body)
