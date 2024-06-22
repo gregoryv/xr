@@ -1,7 +1,7 @@
 // Package xr provides means to pick values from a http.Request
 //
-// Pick first tries to decode the body based on the request
-// content-type header. E.g. "application/json" will use json.Decoder.
+// Pick first tries to decode the body based on the content-type
+// header. E.g. "application/json" will use json.Decoder.
 //
 // If successfull, field tags are used to decode the rest.  For each
 // field tag of a struct the value is read and set.  If there is a
@@ -38,26 +38,20 @@ func (p *Picker) Register(contentType string, fn func(io.Reader) Decoder) {
 // Pick the given request into any struct type.
 func (p *Picker) Pick(dst any, r *http.Request) error {
 	// decide for input format
-	dec := p.newDecoder(
-		r.Header.Get("content-type"),
-		r.Body,
-	)
+	ct := r.Header.Get("content-type")
+	dec := p.newDecoder(ct, r.Body)
 	if err := dec.Decode(dst); err != nil {
 		return err
 	}
 
 	obj := reflect.ValueOf(dst)
-	elm := obj.Elem()
-	typ := elm.Type()
+	for i := 0; i < obj.Elem().NumField(); i++ {
 
-	for i := 0; i < elm.NumField(); i++ {
-		field := typ.Field(i)
-
-		val, err := readValue(r, field.Tag)
+		val, err := readValue(r, obj.Elem().Type().Field(i).Tag)
 		if errors.Is(err, errTagNotFound) {
 			continue
 		}
-		if err := set(obj, i, field, val); err != nil {
+		if err := set(obj, i, val); err != nil {
 			return err
 		}
 	}
@@ -97,12 +91,11 @@ var valueReaders = map[string]valueReader{
 
 type valueReader func(*http.Request, string) string
 
-func set(obj reflect.Value, i int, field reflect.StructField, val string) error {
+func set(obj reflect.Value, i int, val string) error {
 	if val == "" {
 		return nil
 	}
-
-	elm := obj.Elem()
+	field := obj.Elem().Type().Field(i)
 	// private fields cannot be set using reflect
 	isPrivateField := field.PkgPath != ""
 	var setMethod string
@@ -136,59 +129,59 @@ func set(obj reflect.Value, i int, field reflect.StructField, val string) error 
 		if err != nil {
 			return err
 		}
-		elm.Field(i).SetBool(value)
+		obj.Elem().Field(i).SetBool(value)
 
 	case reflect.Int:
 		value, err := strconv.Atoi(val)
 		if err != nil {
 			return err
 		}
-		elm.Field(i).SetInt(int64(value))
+		obj.Elem().Field(i).SetInt(int64(value))
 
 	case reflect.Uint8:
 		value, err := strconv.ParseUint(val, 10, 8)
 		if err != nil {
 			return err
 		}
-		elm.Field(i).SetUint(value)
+		obj.Elem().Field(i).SetUint(value)
 
 	case reflect.Uint16:
 		value, err := strconv.ParseUint(val, 10, 16)
 		if err != nil {
 			return err
 		}
-		elm.Field(i).SetUint(value)
+		obj.Elem().Field(i).SetUint(value)
 
 	case reflect.Uint32:
 		value, err := strconv.ParseUint(val, 10, 32)
 		if err != nil {
 			return err
 		}
-		elm.Field(i).SetUint(value)
+		obj.Elem().Field(i).SetUint(value)
 
 	case reflect.Uint64:
 		value, err := strconv.ParseUint(val, 10, 64)
 		if err != nil {
 			return err
 		}
-		elm.Field(i).SetUint(value)
+		obj.Elem().Field(i).SetUint(value)
 
 	case reflect.Float32:
 		value, err := strconv.ParseFloat(val, 32)
 		if err != nil {
 			return err
 		}
-		elm.Field(i).SetFloat(value)
+		obj.Elem().Field(i).SetFloat(value)
 
 	case reflect.Float64:
 		value, err := strconv.ParseFloat(val, 64)
 		if err != nil {
 			return err
 		}
-		elm.Field(i).SetFloat(value)
+		obj.Elem().Field(i).SetFloat(value)
 
 	case reflect.String:
-		elm.Field(i).SetString(val)
+		obj.Elem().Field(i).SetString(val)
 
 		// add more types when needed
 	default:
