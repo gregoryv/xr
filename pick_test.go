@@ -72,6 +72,33 @@ func TestPick_bool(t *testing.T) {
 	}
 }
 
+func TestPick_int(t *testing.T) {
+	var x struct {
+		I int `header:"number"`
+	}
+	r := httptest.NewRequest("GET", "/", http.NoBody)
+	r.Header.Set("number", "jibberish")
+	if err := Pick(&x, r); err == nil {
+		t.Error("expect error")
+	}
+}
+
+func TestPick_int8(t *testing.T) {
+	var x struct {
+		I int8 `header:"number"`
+	}
+	r := httptest.NewRequest("GET", "/", http.NoBody)
+	r.Header.Set("number", "128")
+	if err := Pick(&x, r); err == nil {
+		t.Error("expect error")
+	}
+	// ok case
+	r.Header.Set("number", "127")
+	if err := Pick(&x, r); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestPick_uint8(t *testing.T) {
 	var x struct {
 		I uint8 `header:"number"`
