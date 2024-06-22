@@ -1,18 +1,14 @@
 [gregoryv/xr](https://pkg.dev.go/github.com/gregoryv/xr) - Pick values from a http.Request
 
-This package simplifies picking values into a struct from a request.
+**Pick the meat of a bone**
 
-Early in a http.Request processing you often read values from
-different parts of the request. Usually those values end up in one
-struct of sorts. That is where package xr comes in. Making the picking
-of values from URLs, headers and body easier.
+Similar to decoding the body it supports reading values from
+the path, query and forms. See [examples](https://pkg.go.dev/github.com/gregoryv/xr#pkg-examples).
 
-It uses reflection to check for field tags, such as;
-**path, query, header, form**
+The package supports a subset of tag names as defined by
+[swaggest/openapi-go](https://github.com/swaggest/openapi-go).
 
-To support checking values in this same process the xr.Picker looks
-for matching Set**FieldName** methods on a struct which may or may not
-return an error.
+In addition, set methods are used for additional format checking
 
     type Account struct {
 	    token string `header:"authorization"`
@@ -21,6 +17,6 @@ return an error.
 	    ...
 	}
 
-
-This also works as a way to pick values into private fields.
+Setters can return any number of values as long as the last one is an
+error it will be returned.
 
