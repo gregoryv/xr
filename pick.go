@@ -159,6 +159,13 @@ func set(obj reflect.Value, i int, val string) error {
 		}
 		obj.Elem().Field(i).SetInt(value)
 
+	case reflect.Int64:
+		value, err := strconv.ParseInt(val, 10, 64)
+		if err != nil {
+			return err
+		}
+		obj.Elem().Field(i).SetInt(value)
+
 	case reflect.Uint8:
 		value, err := strconv.ParseUint(val, 10, 8)
 		if err != nil {
@@ -206,7 +213,7 @@ func set(obj reflect.Value, i int, val string) error {
 
 		// add more types when needed
 	default:
-		return fmt.Errorf("Unsupported VType %v", kind)
+		return fmt.Errorf("set %v: unsupported", kind)
 	}
 	return nil
 }
