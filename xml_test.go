@@ -9,9 +9,8 @@ import (
 	"strings"
 )
 
-func ExamplePick_xml() {
-	// register decoders for content-type headers if needed
-	// application/json is registered out of the box
+func ExampleRegister_xml() {
+	// register decoder for content-type header
 	Register(
 		"application/xml",
 		func(r io.Reader) Decoder {
@@ -19,37 +18,26 @@ func ExamplePick_xml() {
 		},
 	)
 	h := func(w http.ResponseWriter, r *http.Request) {
-		var x PersonCreate
+		var x struct {
+			Name  string `xml:"name"`
+			Width int    `xml:"width"`
+		}
 		_ = Pick(&x, r)
-		fmt.Println("id:", x.Id)
 		fmt.Println("name:", x.Name)
-		fmt.Println("group:", x.Group)
-		fmt.Println("copy:", x.Copy)
-		fmt.Println("flag:", x.Flag)
-		fmt.Println("token:", x.token)
-		fmt.Println("color:", x.Color)
 		fmt.Println("width:", x.Width)
 	}
 
 	w := httptest.NewRecorder()
-	data := `<person><name>John Doe</name></person>`
+	data := `<person>
+<name>John Doe</name>
+<width>100</width>
+</person>`
 	body := strings.NewReader(data)
-	r := httptest.NewRequest("POST", "/person/123?group=aliens&copies=10&flag=true", body)
+	r := httptest.NewRequest("POST", "/person", body)
 	r.Header.Set("content-type", "application/xml")
-	r.Header.Set("authorization", "Bearer ...token...")
-	r.Header.Set("color", "yellow")
-	r.Header.Set("width", "100")
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/person/{id}", h)
-	mux.ServeHTTP(w, r)
+	h(w, r)
 	// output:
-	// id: 123
 	// name: John Doe
-	// group: aliens
-	// copy: 10
-	// flag: true
-	// token: ...token...
-	// color: yellow
 	// width: 100
 }
