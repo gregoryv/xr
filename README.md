@@ -1,4 +1,4 @@
-[gregoryv/xr](https://pkg.dev.go/github.com/gregoryv/xr) - Pick values from a http.Request
+[gregoryv/xr](https://pkg.go.dev/github.com/gregoryv/xr) - Pick values from a http.Request
 
 **Pick the meat of a bone**
 
