@@ -228,6 +228,22 @@ func TestPick_complex64(t *testing.T) {
 	}
 }
 
+func TestPick_complex128(t *testing.T) {
+	var x struct {
+		I complex128 `header:"number"`
+	}
+	r := httptest.NewRequest("GET", "/", http.NoBody)
+	r.Header.Set("number", "2e308+2e308i")
+	if err := Pick(&x, r); err == nil {
+		t.Error("expect error", x.I)
+	}
+	// ok case
+	r.Header.Set("number", "-1.175494351e-38")
+	if err := Pick(&x, r); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestPick_float32(t *testing.T) {
 	var x struct {
 		I float32 `header:"number"`

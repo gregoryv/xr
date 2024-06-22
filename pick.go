@@ -215,6 +215,13 @@ func set(obj reflect.Value, i int, val string) error {
 		}
 		obj.Elem().Field(i).SetComplex(value)
 
+	case reflect.Complex128:
+		value, err := strconv.ParseComplex(val, 128)
+		if err != nil {
+			return err
+		}
+		obj.Elem().Field(i).SetComplex(value)
+
 	case reflect.String:
 		obj.Elem().Field(i).SetString(val)
 
