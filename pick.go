@@ -208,6 +208,13 @@ func set(obj reflect.Value, i int, val string) error {
 		}
 		obj.Elem().Field(i).SetFloat(value)
 
+	case reflect.Complex64:
+		value, err := strconv.ParseComplex(val, 64)
+		if err != nil {
+			return err
+		}
+		obj.Elem().Field(i).SetComplex(value)
+
 	case reflect.String:
 		obj.Elem().Field(i).SetString(val)
 
