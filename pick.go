@@ -152,6 +152,13 @@ func set(obj reflect.Value, i int, val string) error {
 		}
 		obj.Elem().Field(i).SetInt(value)
 
+	case reflect.Int32:
+		value, err := strconv.ParseInt(val, 10, 32)
+		if err != nil {
+			return err
+		}
+		obj.Elem().Field(i).SetInt(value)
+
 	case reflect.Uint8:
 		value, err := strconv.ParseUint(val, 10, 8)
 		if err != nil {
