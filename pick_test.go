@@ -14,6 +14,9 @@ func TestPick_nonPointer(t *testing.T) {
 	}
 	r := httptest.NewRequest("GET", "/?jib=true", http.NoBody)
 	Pick(x, r)
+	if !x.Jib {
+		t.Fail()
+	}
 }
 
 func TestPick_unknownTag(t *testing.T) {
