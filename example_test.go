@@ -47,7 +47,7 @@ func ExamplePick_default() {
 	// token: ...token...
 	// color: yellow
 	// width: 0
-	// SetWidth("100cm"): strconv.Atoi: parsing "100cm": invalid syntax
+	// pick xr.PersonCreate.Width from header[Width]: SetWidth("100cm"): strconv.Atoi: parsing "100cm": invalid syntax
 }
 
 type PersonCreate struct {

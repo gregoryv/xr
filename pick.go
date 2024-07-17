@@ -36,7 +36,7 @@ func (p *Picker) Register(contentType string, fn func(io.Reader) Decoder) {
 }
 
 // Pick the given request into any struct type.
-func (p *Picker) Pick(dst any, r *http.Request) error {
+func (p *Picker) Pick(dst any, r *http.Request) *PickError {
 	if t := reflect.TypeOf(dst); t.Kind() != reflect.Ptr {
 		panic("Pick(dst, r): dst must be a pointer")
 	}
@@ -45,18 +45,26 @@ func (p *Picker) Pick(dst any, r *http.Request) error {
 	ct := r.Header.Get("content-type")
 	dec := p.newDecoder(ct, r.Body)
 	if err := dec.Decode(dst); err != nil {
-		return err
+		return &PickError{
+			Dest:   fmt.Sprintf("%T", dst)[1:],
+			Source: "body",
+			Cause:  err,
+		}
 	}
 
 	obj := reflect.ValueOf(dst)
 	for i := 0; i < obj.Elem().NumField(); i++ {
 
-		val, err := readValue(r, obj.Elem().Type().Field(i).Tag)
+		val, tag, err := readValue(r, obj.Elem().Type().Field(i).Tag)
 		if errors.Is(err, errTagNotFound) {
 			continue
 		}
 		if err := set(obj, i, val); err != nil {
-			return err
+			return &PickError{
+				Dest:   fmt.Sprintf("%v.%s", obj.Elem().Type(), obj.Elem().Type().Field(i).Name),
+				Source: tag,
+				Cause:  err,
+			}
 		}
 	}
 	return nil
@@ -69,13 +77,13 @@ func (p *Picker) newDecoder(v string, r io.Reader) Decoder {
 	return noop
 }
 
-func readValue(r *http.Request, tag reflect.StructTag) (string, error) {
+func readValue(r *http.Request, tag reflect.StructTag) (string, string, error) {
 	for t, fn := range valueReaders {
 		if v := tag.Get(t); v != "" {
-			return fn(r, v), nil
+			return fn(r, v), fmt.Sprintf("%s[%s]", t, v), nil
 		}
 	}
-	return "", errTagNotFound
+	return "", "", errTagNotFound
 }
 
 var errTagNotFound = errors.New("tag not found")
@@ -255,4 +263,19 @@ func (fn decoderFunc) Decode(v any) error {
 
 type Decoder interface {
 	Decode(v any) error
+}
+
+type PickError struct {
+	// package.type.field
+	Dest string
+
+	// (path|query|header|form)[NAME] or body, e.g. header[correlationId]
+	Source string
+
+	// parsing or set error
+	Cause error
+}
+
+func (e *PickError) Error() string {
+	return fmt.Sprintf("pick %s from %s: %s", e.Dest, e.Source, e.Cause.Error())
 }
