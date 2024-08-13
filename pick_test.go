@@ -84,10 +84,28 @@ func TestPick_stopOnFirstError(t *testing.T) {
 	}
 }
 
+func TestPick_GETnoDecoding(t *testing.T) {
+	data := `{"name":"John"}`
+	body := strings.NewReader(data)
+	method := "GET"
+	r := httptest.NewRequest(method, "/", body)
+	r.Header.Set("content-type", "application/json")
+
+	var x struct {
+		Name string `json:"name"`
+	}
+	if err := Pick(&x, r); err != nil {
+		t.Error("expect error")
+	}
+	if x.Name == "John" {
+		t.Errorf("used JSON decoding for method %s", method)
+	}
+}
+
 func TestPick_contentType(t *testing.T) {
 	data := `{broken`
 	body := strings.NewReader(data)
-	r := httptest.NewRequest("GET", "/", body)
+	r := httptest.NewRequest("POST", "/", body)
 	r.Header.Set("content-type", "application/json")
 
 	var x struct {

@@ -42,13 +42,18 @@ func (p *Picker) Pick(dst any, r *http.Request) *PickError {
 	}
 
 	// decide for input format
-	ct := r.Header.Get("content-type")
-	dec := p.newDecoder(ct, r.Body)
-	if err := dec.Decode(dst); err != nil {
-		return &PickError{
-			Dest:   fmt.Sprintf("%T", dst)[1:],
-			Source: "body",
-			Cause:  err,
+	switch r.Method {
+	case "GET", "HEAD", "DELETE":
+		// cannot have a body for decoding
+	default:
+		ct := r.Header.Get("content-type")
+		dec := p.newDecoder(ct, r.Body)
+		if err := dec.Decode(dst); err != nil {
+			return &PickError{
+				Dest:   fmt.Sprintf("%T", dst)[1:],
+				Source: "body",
+				Cause:  err,
+			}
 		}
 	}
 
