@@ -3,6 +3,10 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
+## [unreleased]
+
+- Add Picker.UseSetter for configurable type setting
+
 ## [0.4.0] 2024-08-13
 
 - Ignore body for methods GET, HEAD and DELETE 

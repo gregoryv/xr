@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -23,16 +24,26 @@ import (
 func NewPicker() *Picker {
 	return &Picker{
 		registry: make(map[string]func(io.Reader) Decoder),
+		setters:  make(map[string]setfn),
 	}
 }
 
 type Picker struct {
 	registry map[string]func(io.Reader) Decoder
+	setters  map[string]setfn
 }
 
 // Register body decoder based on content-type string.
 func (p *Picker) Register(contentType string, fn func(io.Reader) Decoder) {
 	p.registry[contentType] = fn
+}
+
+// UseSetter typ should be "package.Type"
+func (p *Picker) UseSetter(typ string, fn setfn) {
+	if _, found := p.setters[typ]; found {
+		panic(fmt.Sprintf("UseSetter(%q): already exists", typ))
+	}
+	p.setters[typ] = fn
 }
 
 // Pick the given request into any struct type.
@@ -64,7 +75,7 @@ func (p *Picker) Pick(dst any, r *http.Request) *PickError {
 		if errors.Is(err, errTagNotFound) {
 			continue
 		}
-		if err := set(obj, i, val); err != nil {
+		if err := p.set(obj, i, val); err != nil {
 			return &PickError{
 				Dest:   fmt.Sprintf("%v.%s", obj.Elem().Type(), obj.Elem().Type().Field(i).Name),
 				Source: tag,
@@ -109,9 +120,12 @@ var valueReaders = map[string]valueReader{
 	},
 }
 
-type valueReader func(*http.Request, string) string
+type (
+	valueReader func(*http.Request, string) string
+	setfn       func(field reflect.Value, v string) error
+)
 
-func set(obj reflect.Value, i int, val string) error {
+func (p *Picker) set(obj reflect.Value, i int, val string) error {
 	if val == "" {
 		return nil
 	}
@@ -140,6 +154,13 @@ func set(obj reflect.Value, i int, val string) error {
 			"private field %s, missing %s", field.Name, setMethod,
 		)
 		panic(msg)
+	}
+
+	// find by type here
+	fn, found := p.setters[field.Type.String()]
+	if found {
+		log.Println(field)
+		return fn(obj.Elem().Field(i), val)
 	}
 
 	kind := field.Type.Kind()

@@ -26,6 +26,11 @@ func Register(contentType string, fn func(io.Reader) Decoder) {
 	PickerDefault.Register(contentType, fn)
 }
 
+// UseSetter using [PickerDefault]
+func UseSetter(typ string, fn setfn) {
+	PickerDefault.UseSetter(typ, fn)
+}
+
 // PickerDefault has a predefined content-type decoder for
 // application/json.
 var PickerDefault *Picker
