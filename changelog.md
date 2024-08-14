@@ -3,7 +3,7 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
-## [unreleased]
+## [0.5.0] 2024-08-14
 
 - Add Picker.UseSetter for configurable type setting
 
