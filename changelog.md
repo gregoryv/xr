@@ -3,6 +3,10 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
+## [0.5.1] 2024-08-14
+
+- Remove logging
+
 ## [0.5.0] 2024-08-14
 
 - Add Picker.UseSetter for configurable type setting

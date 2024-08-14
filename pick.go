@@ -14,7 +14,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -159,7 +158,6 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 	// find by type here
 	fn, found := p.setters[field.Type.String()]
 	if found {
-		log.Println(field)
 		return fn(obj.Elem().Field(i), val)
 	}
 
