@@ -5,7 +5,7 @@ be noted in this file.
 
 ## [unreleased]
 
-- Check minimum field tag for number fields
+- Check minimum, maximum field tags for number fields
 
 ## [0.5.1] 2024-08-14
 
