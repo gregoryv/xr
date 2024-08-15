@@ -297,6 +297,9 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		obj.Elem().Field(i).SetComplex(value)
 
 	case reflect.String:
+		if err := minLength(field.Tag, val); err != nil {
+			return err
+		}
 		if err := maxLength(field.Tag, val); err != nil {
 			return err
 		}
@@ -305,6 +308,21 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		// add more types when needed
 	default:
 		return fmt.Errorf("set %v: unsupported", kind)
+	}
+	return nil
+}
+
+func minLength(tag reflect.StructTag, value string) error {
+	in, found := tag.Lookup("minLength")
+	if !found {
+		return nil
+	}
+	min, err := strconv.ParseInt(in, 10, 64)
+	if err != nil {
+		return err
+	}
+	if int64(len(value)) < min {
+		return fmt.Errorf("minLength exceeded")
 	}
 	return nil
 }

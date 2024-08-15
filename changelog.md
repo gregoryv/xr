@@ -3,6 +3,10 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
+## [0.7.0] 2024-08-15
+
+- Check minLength for string fields
+
 ## [0.6.0] 2024-08-15
 
 - Check maxLength for string fields
