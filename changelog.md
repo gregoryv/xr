@@ -3,8 +3,9 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
-## [unreleased]
+## [0.6.0] 2024-08-15
 
+- Check maxLength for string fields
 - Check minimum, maximum field tags for number fields
 
 ## [0.5.1] 2024-08-14

@@ -297,11 +297,29 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		obj.Elem().Field(i).SetComplex(value)
 
 	case reflect.String:
+		if err := maxLength(field.Tag, val); err != nil {
+			return err
+		}
 		obj.Elem().Field(i).SetString(val)
 
 		// add more types when needed
 	default:
 		return fmt.Errorf("set %v: unsupported", kind)
+	}
+	return nil
+}
+
+func maxLength(tag reflect.StructTag, value string) error {
+	in, found := tag.Lookup("maxLength")
+	if !found {
+		return nil
+	}
+	max, err := strconv.ParseInt(in, 10, 64)
+	if err != nil {
+		return err
+	}
+	if int64(len(value)) > max {
+		return fmt.Errorf("maxLength exceeded")
 	}
 	return nil
 }
