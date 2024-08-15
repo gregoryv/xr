@@ -70,14 +70,16 @@ func (p *Picker) Pick(dst any, r *http.Request) *PickError {
 	obj := reflect.ValueOf(dst)
 	for i := 0; i < obj.Elem().NumField(); i++ {
 
-		val, tag, err := readValue(r, obj.Elem().Type().Field(i).Tag)
+		tag := obj.Elem().Type().Field(i).Tag
+		val, source, err := readValue(r, tag)
 		if errors.Is(err, errTagNotFound) {
 			continue
 		}
+
 		if err := p.set(obj, i, val); err != nil {
 			return &PickError{
 				Dest:   fmt.Sprintf("%v.%s", obj.Elem().Type(), obj.Elem().Type().Field(i).Name),
-				Source: tag,
+				Source: source,
 				Cause:  err,
 			}
 		}
@@ -175,11 +177,17 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
+		if err := minimum(field.Tag, value); err != nil {
+			return err
+		}
 		obj.Elem().Field(i).SetInt(value)
 
 	case reflect.Int8:
 		value, err := strconv.ParseInt(val, 10, 8)
 		if err != nil {
+			return err
+		}
+		if err := minimum(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetInt(value)
@@ -189,11 +197,17 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
+		if err := minimum(field.Tag, value); err != nil {
+			return err
+		}
 		obj.Elem().Field(i).SetInt(value)
 
 	case reflect.Int32:
 		value, err := strconv.ParseInt(val, 10, 32)
 		if err != nil {
+			return err
+		}
+		if err := minimum(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetInt(value)
@@ -203,11 +217,17 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
+		if err := minimum(field.Tag, value); err != nil {
+			return err
+		}
 		obj.Elem().Field(i).SetInt(value)
 
 	case reflect.Uint8:
 		value, err := strconv.ParseUint(val, 10, 8)
 		if err != nil {
+			return err
+		}
+		if err := minimum(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetUint(value)
@@ -217,11 +237,17 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
+		if err := minimum(field.Tag, value); err != nil {
+			return err
+		}
 		obj.Elem().Field(i).SetUint(value)
 
 	case reflect.Uint32:
 		value, err := strconv.ParseUint(val, 10, 32)
 		if err != nil {
+			return err
+		}
+		if err := minimum(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetUint(value)
@@ -231,6 +257,9 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
+		if err := minimum(field.Tag, value); err != nil {
+			return err
+		}
 		obj.Elem().Field(i).SetUint(value)
 
 	case reflect.Float32:
@@ -238,11 +267,17 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
+		if err := minimum(field.Tag, value); err != nil {
+			return err
+		}
 		obj.Elem().Field(i).SetFloat(value)
 
 	case reflect.Float64:
 		value, err := strconv.ParseFloat(val, 64)
 		if err != nil {
+			return err
+		}
+		if err := minimum(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetFloat(value)
@@ -269,6 +304,25 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		return fmt.Errorf("set %v: unsupported", kind)
 	}
 	return nil
+}
+
+func minimum[T NumberConvertibleToFloat64](tag reflect.StructTag, in T) error { // wip minimum
+	min, found := tag.Lookup("minimum")
+	if !found {
+		return nil
+	}
+	value, err := strconv.ParseFloat(min, 32)
+	if err != nil {
+		return err
+	}
+	if float64(in) < value {
+		return fmt.Errorf("minimum exceeded")
+	}
+	return nil
+}
+
+type NumberConvertibleToFloat64 interface {
+	float32 | float64 | int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64
 }
 
 func capitalizeFirstLetter(s string) string {

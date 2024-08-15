@@ -3,6 +3,10 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
+## [unreleased]
+
+- Check minimum field tag for number fields
+
 ## [0.5.1] 2024-08-14
 
 - Remove logging
