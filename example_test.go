@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"strings"
 )
 
@@ -26,13 +25,12 @@ func ExamplePick_default() {
 	}
 
 	w := httptest.NewRecorder()
-	data := `{"Name":"John Doe"}`
+	data := `{"Name":"John Doe", "Width": 100}`
 	body := strings.NewReader(data)
 	r := httptest.NewRequest("POST", "/person/123?group=aliens&copies=10&flag=true&pval=11.79", body)
 	r.Header.Set("content-type", "application/json")
 	r.Header.Set("authorization", "Bearer ...token...")
 	r.Header.Set("color", "yellow")
-	r.Header.Set("width", "100cm")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/person/{id}", h)
@@ -46,8 +44,8 @@ func ExamplePick_default() {
 	// pval: 11.79
 	// token: ...token...
 	// color: yellow
-	// width: 0
-	// pick xr.PersonCreate.Width from header[Width]: SetWidth("100cm"): strconv.Atoi: parsing "100cm": invalid syntax
+	// width: 100
+	// xr.PersonCreate.Width: 100, minimum 200 exceeded
 }
 
 type PersonCreate struct {
@@ -63,7 +61,7 @@ type PersonCreate struct {
 
 	Auth  string `header:"authorization"`
 	Color string `header:"Color"`
-	Width int    `header:"Width"`
+	Width int    `json:"width" minimum:"200"`
 }
 
 // SetToken trims optional prefix "Bearer " from v.
@@ -83,15 +81,4 @@ func (p *PersonCreate) SetColor(v string) error {
 		p.Color = v
 	}
 	return nil
-}
-
-// SetWidth returns old width, or 0 and error
-func (p *PersonCreate) SetWidth(v string) (int, error) {
-	val, err := strconv.Atoi(v)
-	if err != nil {
-		return 0, fmt.Errorf("SetWidth(%q): %w", v, err)
-	}
-	old := p.Width
-	p.Width = val
-	return old, nil
 }

@@ -1,6 +1,7 @@
 package xr
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -8,6 +9,18 @@ import (
 
 // See
 // https://json-schema.org/draft-04/json-schema-validation#rfc.section.5.1.2
+
+func TestPick_maximumUint8json(t *testing.T) {
+	var x struct {
+		I uint8 `json:"number" minimum:"1" maximum:"5"`
+	}
+	data := []byte(`{"number":3}`)
+	r := httptest.NewRequest("POST", "/", bytes.NewReader(data))
+	r.Header.Set("content-type", "application/json")
+	if err := Pick(&x, r); err != nil {
+		t.Error(err)
+	}
+}
 
 func TestPick_maximumUint8(t *testing.T) {
 	var x struct {

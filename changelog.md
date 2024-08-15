@@ -3,6 +3,11 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
+## [0.8.0] 2024-08-15
+
+- Validate fields after decoding
+  e.g. supports field tags `json:"password" minLength:"12"`
+
 ## [0.7.0] 2024-08-15
 
 - Check minLength for string fields
