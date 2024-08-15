@@ -177,10 +177,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetInt(value)
@@ -190,10 +187,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetInt(value)
@@ -203,10 +197,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetInt(value)
@@ -216,10 +207,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetInt(value)
@@ -229,10 +217,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetInt(value)
@@ -242,10 +227,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetUint(value)
@@ -255,10 +237,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetUint(value)
@@ -268,10 +247,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetUint(value)
@@ -281,10 +257,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetUint(value)
@@ -294,10 +267,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetFloat(value)
@@ -307,10 +277,7 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		if err != nil {
 			return err
 		}
-		if err := minimum(field.Tag, value); err != nil {
-			return err
-		}
-		if err := maximum(field.Tag, value); err != nil {
+		if err := minMax(field.Tag, value); err != nil {
 			return err
 		}
 		obj.Elem().Field(i).SetFloat(value)
@@ -335,6 +302,16 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		// add more types when needed
 	default:
 		return fmt.Errorf("set %v: unsupported", kind)
+	}
+	return nil
+}
+
+func minMax[T NumberConvertibleToFloat64](tag reflect.StructTag, value T) error {
+	if err := minimum(tag, value); err != nil {
+		return err
+	}
+	if err := maximum(tag, value); err != nil {
+		return err
 	}
 	return nil
 }
