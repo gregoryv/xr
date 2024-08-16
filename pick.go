@@ -10,7 +10,6 @@
 package xr
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -69,16 +68,22 @@ func (p *Picker) Pick(dst any, r *http.Request) *PickError {
 
 	obj := reflect.ValueOf(dst)
 	for i := 0; i < obj.Elem().NumField(); i++ {
+		field := obj.Elem().Type().Field(i)
+		tag := field.Tag
 
-		tag := obj.Elem().Type().Field(i).Tag
 		val, source, err := readValue(r, tag)
-		if !errors.Is(err, errTagNotFound) {
-			if err := p.set(obj, i, val); err != nil {
-				return &PickError{
-					Dest:   fmt.Sprintf("%v.%s", obj.Elem().Type(), obj.Elem().Type().Field(i).Name),
-					Source: source,
-					Cause:  err,
-				}
+		if errors.Is(err, errTagNotFound) {
+			continue
+		}
+
+		if !field.IsExported() {
+			panic(fmt.Sprintf("%v: private", field.Name))
+		}
+		if err := p.set(obj, i, val); err != nil {
+			return &PickError{
+				Dest:   obj.Elem().Type().Field(i).Name,
+				Source: source,
+				Cause:  err,
 			}
 		}
 	}
@@ -130,31 +135,6 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		return nil
 	}
 	field := obj.Elem().Type().Field(i)
-	// private fields cannot be set using reflect
-	isPrivateField := field.PkgPath != ""
-	var setMethod string
-	if isPrivateField {
-		setMethod = "Set" + capitalizeFirstLetter(field.Name)
-	} else {
-		setMethod = "Set" + field.Name
-	}
-
-	if fn := obj.MethodByName(setMethod); fn.IsValid() {
-		result := fn.Call([]reflect.Value{reflect.ValueOf(val)})
-		// return error from setMethod, if any
-		i := len(result)
-		if i > 0 && !result[i-1].IsNil() {
-			return result[i-1].Interface().(error)
-		}
-		return nil
-	}
-
-	if isPrivateField {
-		msg := fmt.Sprintf(
-			"private field %s, missing %s", field.Name, setMethod,
-		)
-		panic(msg)
-	}
 
 	// find by type here
 	fn, found := p.setters[field.Type.String()]
@@ -270,12 +250,6 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		return fmt.Errorf("set %v: unsupported", kind)
 	}
 	return nil
-}
-
-func capitalizeFirstLetter(s string) string {
-	b := []byte(s)
-	b[0] = bytes.ToUpper([]byte{b[0]})[0]
-	return string(b)
 }
 
 var noop = decoderFunc(func(_ any) error { return nil })

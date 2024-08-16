@@ -8,15 +8,10 @@ the path, query and forms. See [examples](https://pkg.go.dev/github.com/gregoryv
 The package supports a subset of tag names as defined by
 [swaggest/openapi-go](https://github.com/swaggest/openapi-go).
 
-In addition, set methods are used for additional format checking
+Specifically the source of data
 
-    type Account struct {
-	    token string `header:"authorization"`
-    }
-	func (x *Account) SetToken(v string) error {
-	    ...
-	}
-
-Setters can return any number of values as long as the last one is an
-error it will be returned.
+- path
+- header
+- query
+- form
 

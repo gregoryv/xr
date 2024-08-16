@@ -5,6 +5,7 @@ be noted in this file.
 
 ## [unreleased]
 
+- Remove support for setting private fields using SetFIELD methods
 - Remove validation, e.g. minimum, maximum, minLength and maxLength
 
 ## [0.8.0] 2024-08-15

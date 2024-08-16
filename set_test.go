@@ -45,8 +45,12 @@ func TestPicker_typeX_fail(t *testing.T) {
 	r := httptest.NewRequest("GET", "/", http.NoBody)
 	r.Header.Set("color", "neon")
 
-	if err := Pick(&x, r); err == nil {
+	err := Pick(&x, r)
+	if err == nil {
 		t.Error("expect error")
+	}
+	if got := err.Error(); got != "I: unknown color: neon" {
+		t.Error(got)
 	}
 }
 

@@ -1,49 +1,24 @@
 package xr
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-func TestPick_pickErrors(t *testing.T) {
-	var x Car
+func TestPick_pickPrivate(t *testing.T) {
+	var x struct {
+		model string `query:"model"`
+	}
+	defer catchPanic(t)
+
 	r := httptest.NewRequest("GET", "/?model=ford", http.NoBody)
-	err := Pick(&x, r)
-	if err.Source != "query[model]" {
-		t.Error("invalid source", err)
-	}
-	if err.Dest != "xr.Car.model" {
-		t.Error("invalid destination", err)
-	}
-
-	{ // decoding
-		data := `{"sold": "some-incorrect-value"}`
-		body := strings.NewReader(data)
-		r := httptest.NewRequest("POST", "/", body)
-		r.Header.Set("content-type", "application/json")
-
-		err := Pick(&x, r)
-		if err.Source != "body" {
-			t.Error("bad source", err.Source)
-		}
-	}
+	_ = Pick(&x, r)
 }
 
 type Car struct {
-	model string `query:"model"`
-
 	Sold bool `json:"sold"`
-}
-
-func (c *Car) SetModel(v string) error {
-	if v != "audi" {
-		return fmt.Errorf("unknown model %q", v)
-	}
-	c.model = v
-	return nil
 }
 
 func TestPick_nonPointer(t *testing.T) {
@@ -364,7 +339,7 @@ func TestPick_missingSet(t *testing.T) {
 
 func TestPick_noValue(t *testing.T) {
 	var x struct {
-		token string `header:"authorization"`
+		Token string `header:"authorization"`
 	}
 	r := httptest.NewRequest("GET", "/", http.NoBody)
 	// missing header
@@ -375,6 +350,7 @@ func TestPick_noValue(t *testing.T) {
 
 func catchPanic(t *testing.T) {
 	if err := recover(); err == nil {
+		t.Helper()
 		t.Fatal("expect panic")
 	}
 }
