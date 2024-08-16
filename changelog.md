@@ -3,8 +3,9 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
-## [0.9.0] 2024-08-16
+## [unreleased]
 
+- Return error over *PickError
 - Remove support for setting private fields using SetFIELD methods
 - Remove validation, e.g. minimum, maximum, minLength and maxLength
 

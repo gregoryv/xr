@@ -44,8 +44,8 @@ func (p *Picker) UseSetter(typ string, fn setfn) {
 	p.setters[typ] = fn
 }
 
-// Pick the given request into any struct type.
-func (p *Picker) Pick(dst any, r *http.Request) *PickError {
+// Pick the given request into any struct type. Panics if dst is not a pointer.
+func (p *Picker) Pick(dst any, r *http.Request) error {
 	if t := reflect.TypeOf(dst); t.Kind() != reflect.Ptr {
 		panic("Pick(dst, r): dst must be a pointer")
 	}
@@ -58,11 +58,7 @@ func (p *Picker) Pick(dst any, r *http.Request) *PickError {
 		ct := r.Header.Get("content-type")
 		dec := p.newDecoder(ct, r.Body)
 		if err := dec.Decode(dst); err != nil {
-			return &PickError{
-				Dest:   fmt.Sprintf("%T", dst)[1:],
-				Source: "body",
-				Cause:  err,
-			}
+			return err
 		}
 	}
 
@@ -99,9 +95,9 @@ func (p *Picker) newDecoder(v string, r io.Reader) Decoder {
 }
 
 func readValue(r *http.Request, tag reflect.StructTag) (string, string, error) {
-	for t, fn := range valueReaders {
-		if v := tag.Get(t); v != "" {
-			return fn(r, v), fmt.Sprintf("%s[%s]", t, v), nil
+	for source, fn := range valueReaders {
+		if v := tag.Get(source); v != "" {
+			return fn(r, v), source, nil
 		}
 	}
 	return "", "", errTagNotFound

@@ -17,7 +17,7 @@ func init() {
 }
 
 // Pick using [PickerDefault]
-func Pick(dst any, r *http.Request) *PickError {
+func Pick(dst any, r *http.Request) error {
 	return PickerDefault.Pick(dst, r)
 }
 
