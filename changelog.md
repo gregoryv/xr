@@ -3,6 +3,10 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
+## [unreleased]
+
+- Remove validation, e.g. minimum, maximum, minLength and maxLength
+
 ## [0.8.0] 2024-08-15
 
 - Validate fields after decoding

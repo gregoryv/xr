@@ -81,36 +81,6 @@ func (p *Picker) Pick(dst any, r *http.Request) *PickError {
 				}
 			}
 		}
-		// once all fields are set, validate against field tags, eg. minLength
-		if err := minLength(tag, val); err != nil {
-			return &PickError{
-				Dest:   fmt.Sprintf("%v.%s", obj.Elem().Type(), obj.Elem().Type().Field(i).Name),
-				Source: source,
-				Cause:  err,
-			}
-		}
-		if err := maxLength(tag, val); err != nil {
-			return &PickError{
-				Dest:   fmt.Sprintf("%v.%s", obj.Elem().Type(), obj.Elem().Type().Field(i).Name),
-				Source: source,
-				Cause:  err,
-			}
-		}
-		if err := minimumField(obj, i, val); err != nil {
-			return &PickError{
-				Dest:   fmt.Sprintf("%v.%s", obj.Elem().Type(), obj.Elem().Type().Field(i).Name),
-				Source: source,
-				Cause:  err,
-			}
-		}
-		if err := maximumField(obj, i, val); err != nil {
-			return &PickError{
-				Dest:   fmt.Sprintf("%v.%s", obj.Elem().Type(), obj.Elem().Type().Field(i).Name),
-				Source: source,
-				Cause:  err,
-			}
-		}
-
 	}
 
 	return nil
@@ -298,92 +268,6 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 		// add more types when needed
 	default:
 		return fmt.Errorf("set %v: unsupported", kind)
-	}
-	return nil
-}
-
-func minLength(tag reflect.StructTag, value string) error {
-	in, found := tag.Lookup("minLength")
-	if !found {
-		return nil
-	}
-	min, err := strconv.ParseInt(in, 10, 64)
-	if err != nil {
-		return err
-	}
-	if int64(len(value)) < min {
-		return fmt.Errorf("minLength exceeded")
-	}
-	return nil
-}
-
-func maxLength(tag reflect.StructTag, value string) error {
-	in, found := tag.Lookup("maxLength")
-	if !found {
-		return nil
-	}
-	max, err := strconv.ParseInt(in, 10, 64)
-	if err != nil {
-		return err
-	}
-	if int64(len(value)) > max {
-		return fmt.Errorf("maxLength exceeded")
-	}
-	return nil
-}
-
-func minimumField(obj reflect.Value, i int, in string) error {
-	// get minimum value as float
-	field := obj.Elem().Type().Field(i)
-	min, found := field.Tag.Lookup("minimum")
-	if !found {
-		return nil
-	}
-	minVal, err := strconv.ParseFloat(min, 32)
-	if err != nil {
-		return err
-	}
-	// get the already set value
-	var value float64
-	kind := field.Type.Kind()
-	switch kind {
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		value = float64(obj.Elem().Field(i).Uint())
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		value = float64(obj.Elem().Field(i).Int())
-	case reflect.Float32, reflect.Float64:
-		value = float64(obj.Elem().Field(i).Float())
-	}
-	if value < minVal {
-		return fmt.Errorf("%v, minimum %v exceeded", value, minVal)
-	}
-	return nil
-}
-
-func maximumField(obj reflect.Value, i int, in string) error {
-	// get maximum value as float
-	field := obj.Elem().Type().Field(i)
-	max, found := field.Tag.Lookup("maximum")
-	if !found {
-		return nil
-	}
-	maxVal, err := strconv.ParseFloat(max, 32)
-	if err != nil {
-		return err
-	}
-	// get the already set value
-	var value float64
-	kind := field.Type.Kind()
-	switch kind {
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		value = float64(obj.Elem().Field(i).Uint())
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		value = float64(obj.Elem().Field(i).Int())
-	case reflect.Float32, reflect.Float64:
-		value = float64(obj.Elem().Field(i).Float())
-	}
-	if value > maxVal {
-		return fmt.Errorf("maximum exceeded")
 	}
 	return nil
 }

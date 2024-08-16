@@ -45,7 +45,7 @@ func ExamplePick_default() {
 	// token: ...token...
 	// color: yellow
 	// width: 100
-	// xr.PersonCreate.Width: 100, minimum 200 exceeded
+	// <nil>
 }
 
 type PersonCreate struct {
