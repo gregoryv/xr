@@ -272,5 +272,9 @@ type PickError struct {
 }
 
 func (e *PickError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Dest, e.Cause.Error())
+	var cause string
+	if e.Cause != nil {
+		cause = e.Cause.Error()
+	}
+	return fmt.Sprintf("%s: %s", e.Dest, cause)
 }
