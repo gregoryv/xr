@@ -3,7 +3,7 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
-## [unreleased]
+## [0.9.1] 2024-08-21
 
 - Return error over *PickError
 - Remove support for setting private fields using SetFIELD methods
