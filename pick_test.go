@@ -7,6 +7,20 @@ import (
 	"testing"
 )
 
+func TestPick_noBody(t *testing.T) {
+	r := httptest.NewRequest("DELETE", "/?id=A", http.NoBody)
+	// even if the content-type is set this should not fail as
+	// DELETE cannot have a body
+	r.Header.Set("content-type", "application/json")
+
+	var x struct {
+		Id string `query:"id"`
+	}
+	if err := Pick(&x, r); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestPick_pickPrivate(t *testing.T) {
 	var x struct {
 		model string `query:"model"`
