@@ -20,15 +20,39 @@ import (
 
 // NewPicker returns a picker with no content-type decoders.
 func NewPicker() *Picker {
-	return &Picker{
+	p := Picker{
 		registry: make(map[string]func(io.Reader) Decoder),
 		setters:  make(map[string]setfn),
+		kindSetters: map[reflect.Kind]setfn{
+			reflect.String: setStringField,
+
+			reflect.Bool: setBoolField,
+
+			reflect.Int:   setIntField,
+			reflect.Int8:  setInt8Field,
+			reflect.Int16: setInt16Field,
+			reflect.Int32: setInt32Field,
+			reflect.Int64: setInt64Field,
+
+			reflect.Uint8:  setUint8Field,
+			reflect.Uint16: setUint16Field,
+			reflect.Uint32: setUint32Field,
+			reflect.Uint64: setUint64Field,
+
+			reflect.Float32: setFloat32Field,
+			reflect.Float64: setFloat64Field,
+
+			reflect.Complex64:  setComplex64Field,
+			reflect.Complex128: setComplex128,
+		},
 	}
+	return &p
 }
 
 type Picker struct {
-	registry map[string]func(io.Reader) Decoder
-	setters  map[string]setfn
+	registry    map[string]func(io.Reader) Decoder
+	setters     map[string]setfn
+	kindSetters map[reflect.Kind]setfn
 }
 
 // Register body decoder based on content-type string.
@@ -147,112 +171,141 @@ func (p *Picker) set(obj reflect.Value, i int, val string) error {
 	}
 
 	kind := field.Type.Kind()
-	switch kind {
-	case reflect.Bool:
-		value, err := strconv.ParseBool(val)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetBool(value)
-
-	case reflect.Int:
-		value, err := strconv.ParseInt(val, 10, 64)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetInt(value)
-
-	case reflect.Int8:
-		value, err := strconv.ParseInt(val, 10, 8)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetInt(value)
-
-	case reflect.Int16:
-		value, err := strconv.ParseInt(val, 10, 16)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetInt(value)
-
-	case reflect.Int32:
-		value, err := strconv.ParseInt(val, 10, 32)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetInt(value)
-
-	case reflect.Int64:
-		value, err := strconv.ParseInt(val, 10, 64)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetInt(value)
-
-	case reflect.Uint8:
-		value, err := strconv.ParseUint(val, 10, 8)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetUint(value)
-
-	case reflect.Uint16:
-		value, err := strconv.ParseUint(val, 10, 16)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetUint(value)
-
-	case reflect.Uint32:
-		value, err := strconv.ParseUint(val, 10, 32)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetUint(value)
-
-	case reflect.Uint64:
-		value, err := strconv.ParseUint(val, 10, 64)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetUint(value)
-
-	case reflect.Float32:
-		value, err := strconv.ParseFloat(val, 32)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetFloat(value)
-
-	case reflect.Float64:
-		value, err := strconv.ParseFloat(val, 64)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetFloat(value)
-
-	case reflect.Complex64:
-		value, err := strconv.ParseComplex(val, 64)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetComplex(value)
-
-	case reflect.Complex128:
-		value, err := strconv.ParseComplex(val, 128)
-		if err != nil {
-			return err
-		}
-		obj.Elem().Field(i).SetComplex(value)
-
-	case reflect.String:
-		obj.Elem().Field(i).SetString(val)
-
-		// add more types when needed
-	default:
+	fn, found = p.kindSetters[kind]
+	if !found {
 		return fmt.Errorf("set %v: unsupported", kind)
 	}
+	return fn(obj.Elem().Field(i), val)
+}
+
+func setBoolField(field reflect.Value, val string) error {
+	value, err := strconv.ParseBool(val)
+	if err != nil {
+		return err
+	}
+	field.SetBool(value)
+	return nil
+}
+
+func setIntField(field reflect.Value, val string) error {
+	value, err := strconv.ParseInt(val, 10, 64)
+	if err != nil {
+		return err
+	}
+	field.SetInt(value)
+	return nil
+}
+
+func setInt8Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseInt(val, 10, 8)
+	if err != nil {
+		return err
+	}
+	field.SetInt(value)
+	return nil
+}
+
+func setInt16Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseInt(val, 10, 16)
+	if err != nil {
+		return err
+	}
+	field.SetInt(value)
+	return nil
+}
+
+func setInt32Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseInt(val, 10, 32)
+	if err != nil {
+		return err
+	}
+	field.SetInt(value)
+	return nil
+}
+
+func setInt64Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseInt(val, 10, 64)
+	if err != nil {
+		return err
+	}
+	field.SetInt(value)
+	return nil
+}
+
+func setUint8Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseUint(val, 10, 8)
+	if err != nil {
+		return err
+	}
+	field.SetUint(value)
+	return nil
+}
+
+func setUint16Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseUint(val, 10, 16)
+	if err != nil {
+		return err
+	}
+	field.SetUint(value)
+	return nil
+}
+
+func setUint32Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseUint(val, 10, 32)
+	if err != nil {
+		return err
+	}
+	field.SetUint(value)
+	return nil
+}
+
+func setUint64Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseUint(val, 10, 64)
+	if err != nil {
+		return err
+	}
+	field.SetUint(value)
+	return nil
+}
+
+func setFloat32Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseFloat(val, 32)
+	if err != nil {
+		return err
+	}
+	field.SetFloat(value)
+	return nil
+}
+
+func setFloat64Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseFloat(val, 64)
+	if err != nil {
+		return err
+	}
+	field.SetFloat(value)
+	return nil
+}
+
+func setComplex64Field(field reflect.Value, val string) error {
+	value, err := strconv.ParseComplex(val, 64)
+	if err != nil {
+		return err
+	}
+	field.SetComplex(value)
+	return nil
+}
+
+func setStringField(field reflect.Value, val string) error {
+	field.SetString(val)
+	return nil
+}
+
+func setComplex128(field reflect.Value, val string) error {
+	value, err := strconv.ParseComplex(val, 128)
+	if err != nil {
+		return err
+	}
+	field.SetComplex(value)
 	return nil
 }
 
