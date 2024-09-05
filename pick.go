@@ -51,17 +51,14 @@ func (p *Picker) Pick(dst any, r *http.Request) error {
 	}
 
 	// decide for input format
-	switch r.Method {
-	case "GET", "HEAD", "DELETE":
-		// cannot have a body for decoding
-	default:
-		ct := r.Header.Get("content-type")
-		dec := p.newDecoder(ct, r.Body)
-		if err := dec.Decode(dst); err != nil {
-			return err
-		}
+	if err := p.decodeBody(dst, r); err != nil {
+		return err
 	}
 
+	return p.pickFields(dst, r)
+}
+
+func (p *Picker) pickFields(dst any, r *http.Request) error {
 	obj := reflect.ValueOf(dst)
 	for i := 0; i < obj.Elem().NumField(); i++ {
 		field := obj.Elem().Type().Field(i)
@@ -83,8 +80,19 @@ func (p *Picker) Pick(dst any, r *http.Request) error {
 			}
 		}
 	}
-
 	return nil
+}
+
+func (p *Picker) decodeBody(dst any, r *http.Request) error {
+	switch r.Method {
+	case "GET", "HEAD", "DELETE":
+		// cannot have a body for decoding
+		return nil
+
+	default:
+		ct := r.Header.Get("content-type")
+		return p.newDecoder(ct, r.Body).Decode(dst)
+	}
 }
 
 func (p *Picker) newDecoder(v string, r io.Reader) Decoder {

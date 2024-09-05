@@ -11,7 +11,8 @@ func BenchmarkPick(b *testing.B) {
 	var buf bytes.Buffer
 	buf.WriteString(`{"Name":"John Doe", Width: 231}`)
 
-	r := httptest.NewRequest("POST", "/person/123?group=aliens&copies=10&flag=true", &buf)
+	u := "/person/123?group=aliens&copies=10&flag=true"
+	r := httptest.NewRequest("POST", u, &buf)
 	r.Header.Set("content-type", "application/json")
 	r.Header.Set("authorization", "Bearer ...token...")
 
