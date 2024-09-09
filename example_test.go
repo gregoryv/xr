@@ -23,7 +23,7 @@ func ExamplePick_default() {
 	body := strings.NewReader(data)
 	u := "/person/123?group=aliens&copies=10&flag=true&pval=11.79"
 	r := httptest.NewRequest("POST", u, body)
-	r.Header.Set("content-type", "application/json")
+	r.Header.Set("content-type", "application/json; charset=utf-8")
 	r.Header.Set("authorization", "Bearer ...token...")
 	r.Header.Set("color", "yellow")
 

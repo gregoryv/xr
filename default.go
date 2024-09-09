@@ -13,6 +13,11 @@ func init() {
 			return json.NewDecoder(r)
 		},
 	)
+	p.Register("application/json; charset=utf-8",
+		func(r io.Reader) Decoder {
+			return json.NewDecoder(r)
+		},
+	)
 	PickerDefault = p
 }
 

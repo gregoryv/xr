@@ -3,6 +3,10 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
+## [0.10.0] 2024-09-09
+
+- Default supports content-type: application/json; charset=utf-8
+
 ## [0.9.1] 2024-08-21
 
 - Return error over *PickError
