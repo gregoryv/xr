@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // NewPicker returns a picker with no content-type decoders.
@@ -129,7 +130,7 @@ func (p *Picker) newDecoder(v string, r io.Reader) Decoder {
 func readValue(r *http.Request, tag reflect.StructTag) (string, string, error) {
 	for source, fn := range valueReaders {
 		if v := tag.Get(source); v != "" {
-			return fn(r, v), source, nil
+			return fn(r, v), fmt.Sprintf("%s[%s]", source, v), nil
 		}
 	}
 	return "", "", errTagNotFound
@@ -335,7 +336,7 @@ type PickError struct {
 func (e *PickError) Error() string {
 	var cause string
 	if e.Cause != nil {
-		cause = e.Cause.Error()
+		cause = strings.Replace(e.Cause.Error(), "strconv.", "", 1)
 	}
-	return fmt.Sprintf("%s: %s", e.Dest, cause)
+	return fmt.Sprintf("pick %s from %s: %s", e.Dest, e.Source, cause)
 }

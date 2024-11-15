@@ -1,11 +1,34 @@
 package xr
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
+
+func ExamplePick_descriptiveErrors() {
+	{ // boolean field
+		var x struct {
+			Field bool `header:"f1"`
+		}
+		r := httptest.NewRequest("GET", "/", http.NoBody)
+		r.Header.Set("f1", "yes")
+		fmt.Println(Pick(&x, r))
+	}
+	{ // integer
+		var x struct {
+			Field int `query:"f2"`
+		}
+		r := httptest.NewRequest("GET", "/?f2=hi", http.NoBody)
+		fmt.Println(Pick(&x, r))
+	}
+
+	// output:
+	// pick Field from header[f1]: ParseBool: parsing "yes": invalid syntax
+	// pick Field from query[f2]: ParseInt: parsing "hi": invalid syntax
+}
 
 func TestPick_noBody(t *testing.T) {
 	r := httptest.NewRequest("DELETE", "/?id=A", http.NoBody)

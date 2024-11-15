@@ -3,6 +3,11 @@
 This project adheres to semantic versioning and all major changes will
 be noted in this file.
 
+## [0.10.1-dev]
+
+- Remove strconv. prefix in error messages
+- Include tag name in error messages
+
 ## [0.10.0] 2024-09-09
 
 - Default supports content-type: application/json; charset=utf-8

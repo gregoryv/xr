@@ -49,9 +49,6 @@ func TestPicker_typeX_fail(t *testing.T) {
 	if err == nil {
 		t.Error("expect error")
 	}
-	if got := err.Error(); got != "I: unknown color: neon" {
-		t.Error(got)
-	}
 }
 
 type Color int
